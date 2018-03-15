@@ -1,59 +1,25 @@
 package db.dao;
 
 import db.entity.Author;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
-public class AuthorDao {
+@Repository
+public interface AuthorDao extends JpaRepository<Author, Integer> {
 
-    public void save(Author author){
-        EntityManager entityManager = GenericDao.getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
+    @Query("select a from Author a where a.id = :authorId")
+    Author getOne(@Param("authorId") Integer authorId);
 
-        entityManager.persist(author);
+    @Query("SELECT a FROM Author a WHERE a.authorName LIKE %?1")
+    List<Author> findAuthorByName(String name);
 
-        transaction.commit();
-        entityManager.close();
-    }
-
-    public void remove(Author author){
-        EntityManager entityManager = GenericDao.getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
-
-//        entityManager.remove(author);
-        entityManager.remove(entityManager.contains(author)? author : entityManager.merge(author));
-
-        transaction.commit();
-        entityManager.close();
-    }
-
-    public void update(Author author){
-        EntityManager entityManager = GenericDao.getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
-
-
-        entityManager.merge(author);
-
-        transaction.commit();
-        entityManager.close();
-    }
-
-    public List<Author> getAll(){
-        EntityManager entityManager = GenericDao.getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
-
-        List<Author> authors = entityManager.createQuery("from Author", Author.class).getResultList();
-
-        transaction.commit();
-        entityManager.close();
-
-        return authors;
-    }
+    @Query("select a from Author a WHERE a.birthday>= :expDate ORDER BY a.birthday ASC")
+    List<Author> older55(@Param("expDate") Date expDate);
 
 }

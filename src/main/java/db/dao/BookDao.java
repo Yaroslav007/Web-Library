@@ -1,79 +1,23 @@
 package db.dao;
 
 import db.entity.Book;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 import java.util.List;
 
-public class BookDao {
+@Repository
+public interface BookDao extends JpaRepository<Book, Integer> {
 
-    public void save(Book book){
-        EntityManager entityManager = GenericDao.getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
 
-        entityManager.persist(book);
+    @Query("SELECT b FROM Book b WHERE b.bookName LIKE %:name%")
+    List<Book> findBookByName(@Param("name") String name);
 
-        transaction.commit();
-        entityManager.close();
-    }
+    @Query("select b from Book b where b.id = :bookId")
+    Book getOne(@Param("bookId") Integer bookId);
 
-    public void remove(Book book){
-        EntityManager entityManager = GenericDao.getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
-
-        entityManager.remove(entityManager.contains(book)? book : entityManager.merge(book));
-
-        transaction.commit();
-        entityManager.close();
-    }
-
-    public void update(Book book){
-        EntityManager entityManager = GenericDao.getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
-
-        entityManager.merge(book);
-
-        transaction.commit();
-        entityManager.close();
-    }
-
-    public List<Book> getAll(){
-        EntityManager entityManager = GenericDao.getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
-
-        List<Book> books = entityManager.createQuery("from Book", Book.class).getResultList();
-
-        transaction.commit();
-        entityManager.close();
-
-        return books;
-    }
-
-    public List<Book> getByName(String name){
-        EntityManager entityManager = GenericDao.getEntityManager();
-        EntityTransaction transaction = entityManager.getTransaction();
-        transaction.begin();
-
-        List<Book> books = findWithName(name);
-        System.out.println(books);
-
-        transaction.commit();
-        entityManager.close();
-
-        return books;
-    }
-
-    public List findWithName(String name) {
-        EntityManager entityManager = GenericDao.getEntityManager();
-        List <Book> books =entityManager.createQuery(
-                "SELECT b FROM Book b WHERE b.bookName LIKE :custName")
-                .setParameter("custName", "%"+name+"%")
-                .getResultList();
-        return books;
-    }
+    @Query("SELECT COUNT(id) FROM Book b WHERE b.genre LIKE ?1")
+    Integer numberBookByGenre(String genre);
 
 }

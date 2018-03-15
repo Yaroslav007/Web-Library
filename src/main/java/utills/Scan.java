@@ -1,7 +1,5 @@
 package utills;
 
-import java.util.Scanner;
-
 public class Scan {
 
     public static int scannerInt(String message){
